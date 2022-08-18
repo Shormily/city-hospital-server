@@ -28,20 +28,16 @@ async function run() {
     await client.connect();
     const database = client.db("cityHospial");
     const servicesCollection = database.collection("services");
+    const orderCollection = database.collection('orders');
+
+
     // GET API
     app.get("/services", async(req, res) =>{
         const cursor = servicesCollection.find({});
         const services = await cursor.toArray();
         res.send(services);
     })
-    // GET Single Service
-    // app.get('/services', async(req, res) =>{
-    //     const id = req.params.id;
-    //     console.log("getting specific service", id)
-    //     const query = {_id: ObjectId(id)};
-    //     const service = await servicesCollection.findOne(query);
-    //     res.json(service);
-    // })
+    
 
     app.get('/services/:id', async (req, res) =>{
        const id = req.params.id
@@ -71,6 +67,36 @@ async function run() {
       console.log(result);
       res.json(result);
     });
+
+    // Add Orders API
+    app.get('/orders',async (req,res)=>{
+      let query = {};
+      const email = req.query.email;
+      if(email){
+        query={email:email};
+      }
+      const cursor = orderCollection.find({});
+      const orders = await cursor.toArray();
+      res.json(orders);
+    })
+    app.post('/orders', async(req,res) =>{
+      const order = req.body;
+      const result = await orderCollection.insertOne(order);
+      res.json(result)
+    })
+
+// CRUD OPERATION
+
+app.get('/services/:id', async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  const query = { _id: ObjectId(id) };
+  const ticket = await servicesCollection.findOne(query);
+  // console.log('load user id', id);
+  res.send(ticket);
+})
+
+
   } finally {
 
     //   await client.close();
